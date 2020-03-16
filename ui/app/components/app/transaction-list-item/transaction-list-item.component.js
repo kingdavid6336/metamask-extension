@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react'
 import PropTypes from 'prop-types'
 import classnames from 'classnames'
 import Identicon from '../../ui/identicon'
+import PopOver from '../../ui/popover'
 import TransactionStatus from '../transaction-status'
 import TransactionAction from '../transaction-action'
 import UserPreferencedCurrencyDisplay from '../user-preferenced-currency-display'
@@ -87,7 +88,8 @@ export default class TransactionListItem extends PureComponent {
       })
     }
 
-    this.setState({ showTransactionDetails: !showTransactionDetails })
+    this.setState({ showPopover: !this.state.showPopover })
+    // this.setState({ showTransactionDetails: !showTransactionDetails })
   }
 
   handleCancel = (id) => {
@@ -205,6 +207,15 @@ export default class TransactionListItem extends PureComponent {
 
     return (
       <div className="transaction-list-item">
+        {
+          this.state.showPopover
+            ? (<PopOver title={'A test title'} onClose={() => this.setState({ showPopover: false })}>
+                <div className="popover-container">
+                  { 'Test' }
+                </div>
+              </PopOver>)
+            : null
+        }
         <div
           className="transaction-list-item__grid"
           onClick={this.handleClick}
