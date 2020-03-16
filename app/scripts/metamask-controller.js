@@ -614,11 +614,11 @@ export default class MetamaskController extends EventEmitter {
         this.preferencesController.setAddresses(accounts)
         this.selectFirstIdentity()
       }
-      releaseLock()
       return vault
     } catch (err) {
-      releaseLock()
       throw err
+    } finally {
+      releaseLock()
     }
   }
 
@@ -658,11 +658,11 @@ export default class MetamaskController extends EventEmitter {
       // set new identities
       this.preferencesController.setAddresses(accounts)
       this.selectFirstIdentity()
-      releaseLock()
       return vault
     } catch (err) {
-      releaseLock()
       throw err
+    } finally {
+      releaseLock()
     }
   }
 
@@ -774,7 +774,6 @@ export default class MetamaskController extends EventEmitter {
    */
   async submitPassword (password) {
     await this.keyringController.submitPassword(password)
-    this.emit('unlocked')
 
     const accounts = await this.keyringController.getAccounts()
 
