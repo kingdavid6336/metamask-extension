@@ -208,6 +208,7 @@ export default class MetamaskController extends EventEmitter {
       encryptor: opts.encryptor || undefined,
     })
     this.keyringController.memStore.subscribe((s) => this._onKeyringControllerUpdate(s))
+    this.addUnlockListener(this._onUnlock.bind(this))
 
     this.permissionsController = new PermissionsController({
       getKeyringAccounts: this.keyringController.getAccounts.bind(this.keyringController),
@@ -1783,14 +1784,21 @@ export default class MetamaskController extends EventEmitter {
     // Ensure preferences + identities controller know about all addresses
     this.preferencesController.addAddresses(addresses)
     this.accountTracker.syncWithAddresses(addresses)
+  }
 
-    const wasLocked = !isUnlocked
-    if (wasLocked) {
-      const oldSelectedAddress = this.preferencesController.getSelectedAddress()
-      if (!addresses.includes(oldSelectedAddress)) {
-        const address = addresses[0]
-        await this.preferencesController.setSelectedAddress(address)
-      }
+  /**
+   * Handle unlock (KeyringController#unlock)
+   * - select new address if old selected address no longer exists
+   */
+  _onUnlock () {
+
+    const { keyrings } = this.keyringController.memStore.getState()
+    const addresses = keyrings.reduce((acc, { accounts }) => acc.concat(accounts), [])
+
+    const oldSelectedAddress = this.preferencesController.getSelectedAddress()
+    if (!addresses.includes(oldSelectedAddress)) {
+      const address = addresses[0]
+      await this.preferencesController.setSelectedAddress(address)
     }
   }
 
