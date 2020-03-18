@@ -1786,7 +1786,6 @@ export default class MetamaskController extends EventEmitter {
 
     const wasLocked = !isUnlocked
     if (wasLocked) {
-      this.emit('unlocked')
       const oldSelectedAddress = this.preferencesController.getSelectedAddress()
       if (!addresses.includes(oldSelectedAddress)) {
         const address = addresses[0]
@@ -1818,7 +1817,7 @@ export default class MetamaskController extends EventEmitter {
    * @param {Function} handler - The event handler.
    */
   addUnlockListener (handler) {
-    this.on('unlocked', handler)
+    this.keyringController.on('unlock', handler)
   }
 
   //=============================================================================
