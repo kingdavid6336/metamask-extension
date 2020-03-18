@@ -1774,7 +1774,7 @@ export default class MetamaskController extends EventEmitter {
    * @private
    */
   async _onKeyringControllerUpdate (state) {
-    const { isUnlocked, keyrings } = state
+    const { keyrings } = state
     const addresses = keyrings.reduce((acc, { accounts }) => acc.concat(accounts), [])
 
     if (!addresses.length) {
@@ -1790,7 +1790,7 @@ export default class MetamaskController extends EventEmitter {
    * Handle unlock (KeyringController#unlock)
    * - select new address if old selected address no longer exists
    */
-  _onUnlock () {
+  async _onUnlock () {
 
     const { keyrings } = this.keyringController.memStore.getState()
     const addresses = keyrings.reduce((acc, { accounts }) => acc.concat(accounts), [])
