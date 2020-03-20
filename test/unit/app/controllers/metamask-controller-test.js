@@ -955,65 +955,6 @@ describe('MetaMaskController', function () {
       assert.deepEqual(metamaskController.getState(), oldState)
     })
   })
-
-  describe('#_onUnlock', function () {
-
-    it('should update selected address on unlock if the address no longer exists', async function () {
-
-      const mockKeyRings = [
-        { accounts: ['0x1'] },
-        { accounts: ['0x2'] },
-      ]
-
-      const getState = sinon.fake.returns({ keyrings: mockKeyRings })
-      sandbox.replace(metamaskController.keyringController, 'memStore', {
-        getState,
-      })
-
-      const getSelectedAddress = sinon.fake.returns('0x42')
-      const setSelectedAddress = sinon.fake()
-      sandbox.replace(metamaskController, 'preferencesController', {
-        getSelectedAddress,
-        setSelectedAddress,
-      })
-
-      const oldState = metamaskController.getState()
-      await metamaskController._onUnlock()
-
-      assert.ok(getState.calledOnce)
-      assert.ok(getSelectedAddress.calledOnce)
-      assert.deepEqual(setSelectedAddress.args, [['0x1']])
-      assert.deepEqual(metamaskController.getState(), oldState)
-    })
-
-    it('should NOT update selected address on unlock if the address still exists', async function () {
-
-      const mockKeyRings = [
-        { accounts: ['0x1'] },
-        { accounts: ['0x2'] },
-      ]
-
-      const getState = sinon.fake.returns({ keyrings: mockKeyRings })
-      sandbox.replace(metamaskController.keyringController, 'memStore', {
-        getState,
-      })
-
-      const getSelectedAddress = sinon.fake.returns('0x2')
-      const setSelectedAddress = sinon.fake()
-      sandbox.replace(metamaskController, 'preferencesController', {
-        getSelectedAddress,
-        setSelectedAddress,
-      })
-
-      const oldState = metamaskController.getState()
-      await metamaskController._onUnlock()
-
-      assert.ok(getState.calledOnce)
-      assert.ok(getSelectedAddress.calledOnce)
-      assert.ok(setSelectedAddress.notCalled)
-      assert.deepEqual(metamaskController.getState(), oldState)
-    })
-  })
 })
 
 function deferredPromise () {

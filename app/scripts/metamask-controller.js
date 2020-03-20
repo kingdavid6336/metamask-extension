@@ -119,7 +119,6 @@ export default class MetamaskController extends EventEmitter {
       openPopup: opts.openPopup,
       network: this.networkController,
     })
-    this.on('unlock', this._onUnlock)
 
     this.appStateController = new AppStateController({
       addUnlockListener: this.on.bind(this, 'unlock'),
@@ -1785,22 +1784,6 @@ export default class MetamaskController extends EventEmitter {
     // Ensure preferences + identities controller know about all addresses
     this.preferencesController.addAddresses(addresses)
     this.accountTracker.syncWithAddresses(addresses)
-  }
-
-  /**
-   * Handle unlock (KeyringController#unlock)
-   * - select new address if old selected address no longer exists
-   */
-  async _onUnlock () {
-
-    const { keyrings } = this.keyringController.memStore.getState()
-    const addresses = keyrings.reduce((acc, { accounts }) => acc.concat(accounts), [])
-
-    const oldSelectedAddress = this.preferencesController.getSelectedAddress()
-    if (!addresses.includes(oldSelectedAddress)) {
-      const address = addresses[0]
-      await this.preferencesController.setSelectedAddress(address)
-    }
   }
 
   // misc
