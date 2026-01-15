@@ -4,19 +4,35 @@ import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { shuffle } from 'lodash';
 import { useHistory } from 'react-router-dom';
+import isEqual from 'lodash/isEqual';
 import {
-  navigateBackToBuildQuote,
+  navigateBackToPrepareSwap,
   getFetchParams,
   getQuotesFetchStartTime,
+  getCurrentSmartTransactionsEnabled,
 } from '../../../ducks/swaps/swaps';
 import {
   isHardwareWallet,
   getHardwareWalletType,
 } from '../../../selectors/selectors';
+import {
+  getSmartTransactionsEnabled,
+  getSmartTransactionsOptInStatusForMetrics,
+} from '../../../../shared/modules/selectors';
 import { I18nContext } from '../../../contexts/i18n';
-import { MetaMetricsContext } from '../../../contexts/metametrics.new';
+import { MetaMetricsContext } from '../../../contexts/metametrics';
 import Mascot from '../../../components/ui/mascot';
+import { MetaMetricsEventCategory } from '../../../../shared/constants/metametrics';
 import SwapsFooter from '../swaps-footer';
+import { Text } from '../../../components/component-library';
+import {
+  TextVariant,
+  TextColor,
+  BlockSize,
+  Display,
+  JustifyContent,
+  TextTransform,
+} from '../../../helpers/constants/design-system';
 import BackgroundAnimation from './background-animation';
 
 export default function LoadingSwapsQuotes({
@@ -25,18 +41,25 @@ export default function LoadingSwapsQuotes({
   onDone,
 }) {
   const t = useContext(I18nContext);
-  const metaMetricsEvent = useContext(MetaMetricsContext);
+  const trackEvent = useContext(MetaMetricsContext);
   const dispatch = useDispatch();
   const history = useHistory();
   const animationEventEmitter = useRef(new EventEmitter());
 
-  const fetchParams = useSelector(getFetchParams);
+  const fetchParams = useSelector(getFetchParams, isEqual);
   const quotesFetchStartTime = useSelector(getQuotesFetchStartTime);
   const hardwareWalletUsed = useSelector(isHardwareWallet);
   const hardwareWalletType = useSelector(getHardwareWalletType);
+  const smartTransactionsOptInStatus = useSelector(
+    getSmartTransactionsOptInStatusForMetrics,
+  );
+  const smartTransactionsEnabled = useSelector(getSmartTransactionsEnabled);
+  const currentSmartTransactionsEnabled = useSelector(
+    getCurrentSmartTransactionsEnabled,
+  );
   const quotesRequestCancelledEventConfig = {
     event: 'Quotes Request Cancelled',
-    category: 'swaps',
+    category: MetaMetricsEventCategory.Swaps,
     sensitiveProperties: {
       token_from: fetchParams?.sourceTokenInfo?.symbol,
       token_from_amount: fetchParams?.value,
@@ -47,6 +70,9 @@ export default function LoadingSwapsQuotes({
       response_time: Date.now() - quotesFetchStartTime,
       is_hardware_wallet: hardwareWalletUsed,
       hardware_wallet_type: hardwareWalletType,
+      stx_enabled: smartTransactionsEnabled,
+      current_stx_enabled: currentSmartTransactionsEnabled,
+      stx_user_opt_in: smartTransactionsOptInStatus,
     },
   };
 
@@ -90,12 +116,8 @@ export default function LoadingSwapsQuotes({
 
   useEffect(() => {
     if (currentMascotContainer) {
-      const {
-        top,
-        left,
-        width,
-        height,
-      } = currentMascotContainer.getBoundingClientRect();
+      const { top, left, width, height } =
+        currentMascotContainer.getBoundingClientRect();
       const center = { x: left + width / 2, y: top + height / 2 };
       setMidpointTarget(center);
     }
@@ -105,17 +127,34 @@ export default function LoadingSwapsQuotes({
     <div className="loading-swaps-quotes">
       <div className="loading-swaps-quotes__content">
         <>
-          <div className="loading-swaps-quotes__quote-counter">
+          <Text
+            variant={TextVariant.bodyXs}
+            data-testid="loading-swaps-quotes-quote-counter"
+            color={TextColor.textAlternative}
+            marginTop={1}
+            display={Display.Flex}
+            justifyContent={JustifyContent.center}
+            width={BlockSize.Full}
+            marginBottom={1}
+          >
             <span>
-              {t('swapQuoteNofN', [
+              {t('swapFetchingQuoteNofN', [
                 Math.min(quoteCount + 1, numberOfQuotes),
                 numberOfQuotes,
               ])}
             </span>
-          </div>
-          <div className="loading-swaps-quotes__quote-name-check">
+          </Text>
+          <Text
+            variant={TextVariant.headingSm}
+            data-testid="loading-swaps-quotes-quote-name-check"
+            color={TextColor.textDefault}
+            display={Display.Flex}
+            justifyContent={JustifyContent.center}
+            width={BlockSize.Full}
+            textTransform={TextTransform.Capitalize}
+          >
             <span>{t('swapFetchingQuotes')}</span>
-          </div>
+          </Text>
           <div className="loading-swaps-quotes__loading-bar-container">
             <div
               className="loading-swaps-quotes__loading-bar"
@@ -135,7 +174,6 @@ export default function LoadingSwapsQuotes({
               animationEventEmitter={animationEventEmitter.current}
               width="90"
               height="90"
-              followMouse={false}
               lookAtTarget={midPointTarget}
             />
           </div>
@@ -144,8 +182,8 @@ export default function LoadingSwapsQuotes({
       <SwapsFooter
         submitText={t('back')}
         onSubmit={async () => {
-          metaMetricsEvent(quotesRequestCancelledEventConfig);
-          await dispatch(navigateBackToBuildQuote(history));
+          trackEvent(quotesRequestCancelledEventConfig);
+          await dispatch(navigateBackToPrepareSwap(history));
         }}
         hideCancel
       />

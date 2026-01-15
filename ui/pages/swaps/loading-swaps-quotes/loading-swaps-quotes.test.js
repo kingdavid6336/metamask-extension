@@ -28,13 +28,14 @@ const createProps = (customProps = {}) => {
 };
 
 describe('LoadingSwapsQuotes', () => {
+  process.env.METAMASK_BUILD_TYPE = 'main';
   it('renders the component with initial props', () => {
     const store = configureMockStore()(createSwapsMockStore());
     const { getByText } = renderWithProvider(
       <LoadingSwapsQuotes {...createProps()} />,
       store,
     );
-    expect(getByText('Quote 1 of 2')).toBeInTheDocument();
+    expect(getByText('Fetching quote 1 of 2')).toBeInTheDocument();
     expect(getByText('Back')).toBeInTheDocument();
   });
 });

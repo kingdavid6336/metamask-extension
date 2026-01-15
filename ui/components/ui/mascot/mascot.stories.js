@@ -21,11 +21,10 @@ const buttonStyle = {
 };
 
 export default {
-  title: 'Mascot',
-  id: __filename,
+  title: 'Components/UI/Mascot',
 };
 
-export function Demo() {
+export const DefaultStory = () => {
   const [lookAtDirection, setLookAtDirection] = useState(null);
   const [followMouseMode, setFollowMouseMode] = useState(false);
   const [clickToLookMode, setClickToLookMode] = useState(false);
@@ -88,4 +87,6 @@ export function Demo() {
       </div>
     </div>
   );
-}
+};
+
+DefaultStory.storyName = 'Default';

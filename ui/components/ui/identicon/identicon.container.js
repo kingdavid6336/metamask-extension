@@ -1,15 +1,18 @@
 import { connect } from 'react-redux';
+import { getTokenList } from '../../../selectors';
+import { getNftContractsByAddressOnCurrentChain } from '../../../selectors/nft';
 import Identicon from './identicon.component';
 
 const mapStateToProps = (state) => {
   const {
-    metamask: { useBlockie, useTokenDetection, tokenList },
+    metamask: { useBlockie, ipfsGateway },
   } = state;
 
   return {
     useBlockie,
-    useTokenDetection,
-    tokenList,
+    tokenList: getTokenList(state),
+    ipfsGateway,
+    watchedNftContracts: getNftContractsByAddressOnCurrentChain(state),
   };
 };
 

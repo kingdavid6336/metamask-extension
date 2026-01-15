@@ -1,102 +1,150 @@
-import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import React, { useState, useContext } from 'react';
+import { useHistory, useLocation } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import Box from '../../../components/ui/box';
 import Button from '../../../components/ui/button';
-import Typography from '../../../components/ui/typography';
-import Copy from '../../../components/ui/icon/copy-icon.component';
 import { useCopyToClipboard } from '../../../hooks/useCopyToClipboard';
 import { useI18nContext } from '../../../hooks/useI18nContext';
-import { INITIALIZE_CONFIRM_SEED_PHRASE_ROUTE } from '../../../helpers/constants/routes';
+import { ONBOARDING_CONFIRM_SRP_ROUTE } from '../../../helpers/constants/routes';
 import {
-  TEXT_ALIGN,
-  TYPOGRAPHY,
-  JUSTIFY_CONTENT,
-  FONT_WEIGHT,
+  Text,
+  Icon,
+  IconName,
+  Box,
+} from '../../../components/component-library';
+import {
+  TextVariant,
+  TextAlign,
+  JustifyContent,
+  FontWeight,
+  IconColor,
 } from '../../../helpers/constants/design-system';
-import ProgressBar from '../../../components/app/step-progress-bar';
+import {
+  ThreeStepProgressBar,
+  threeStepStages,
+} from '../../../components/app/step-progress-bar';
+import {
+  MetaMetricsEventCategory,
+  MetaMetricsEventName,
+} from '../../../../shared/constants/metametrics';
+import { MetaMetricsContext } from '../../../contexts/metametrics';
 import RecoveryPhraseChips from './recovery-phrase-chips';
 
-export default function RecoveryPhrase({ seedPhrase }) {
+export default function RecoveryPhrase({ secretRecoveryPhrase }) {
   const history = useHistory();
   const t = useI18nContext();
+  const { search } = useLocation();
   const [copied, handleCopy] = useCopyToClipboard();
-  const [seedPhraseRevealed, setSeedPhraseRevealed] = useState(false);
+  const [phraseRevealed, setPhraseRevealed] = useState(false);
+  const [hiddenPhrase, setHiddenPhrase] = useState(false);
+  const searchParams = new URLSearchParams(search);
+  const isFromReminderParam = searchParams.get('isFromReminder')
+    ? '/?isFromReminder=true'
+    : '';
+  const trackEvent = useContext(MetaMetricsContext);
+
   return (
-    <div>
-      <ProgressBar stage="SEED_PHRASE_REVIEW" />
+    <div className="recovery-phrase" data-testid="recovery-phrase">
+      <ThreeStepProgressBar stage={threeStepStages.RECOVERY_PHRASE_REVIEW} />
       <Box
-        justifyContent={JUSTIFY_CONTENT.CENTER}
-        textAlign={TEXT_ALIGN.CENTER}
+        justifyContent={JustifyContent.center}
+        textAlign={TextAlign.Center}
         marginBottom={4}
       >
-        <Typography variant={TYPOGRAPHY.H2} fontWeight={FONT_WEIGHT.BOLD}>
+        <Text
+          variant={TextVariant.headingLg}
+          fontWeight={FontWeight.Bold}
+          className="recovery-phrase__header"
+        >
           {t('seedPhraseWriteDownHeader')}
-        </Typography>
+        </Text>
       </Box>
       <Box
-        justifyContent={JUSTIFY_CONTENT.CENTER}
-        textAlign={TEXT_ALIGN.CENTER}
+        justifyContent={JustifyContent.center}
+        textAlign={TextAlign.Center}
         marginBottom={4}
       >
-        <Typography variant={TYPOGRAPHY.H4}>
+        <Text variant={TextVariant.headingSm} fontWeight={FontWeight.Normal}>
           {t('seedPhraseWriteDownDetails')}
-        </Typography>
+        </Text>
       </Box>
       <Box
-        justifyContent={JUSTIFY_CONTENT.SPACE_EVENLY}
-        textAlign={TEXT_ALIGN.LEFT}
+        textAlign={TextAlign.Left}
         marginBottom={4}
         className="recovery-phrase__tips"
       >
-        <Typography variant={TYPOGRAPHY.H4} fontWeight={FONT_WEIGHT.BOLD}>
-          {t('tips')}:
-        </Typography>
+        <Text variant={TextVariant.headingSm}>{t('tips')}:</Text>
         <ul>
           <li>
-            <Typography variant={TYPOGRAPHY.H4}>
-              {t('seedPhraseIntroSidebarBulletFour')}
-            </Typography>
+            <Text
+              variant={TextVariant.headingSm}
+              fontWeight={FontWeight.Normal}
+            >
+              {t('seedPhraseIntroSidebarBulletOne')}
+            </Text>
           </li>
           <li>
-            <Typography variant={TYPOGRAPHY.H4}>
+            <Text
+              variant={TextVariant.headingSm}
+              fontWeight={FontWeight.Normal}
+            >
               {t('seedPhraseIntroSidebarBulletTwo')}
-            </Typography>
-          </li>
-          <li>
-            <Typography variant={TYPOGRAPHY.H4}>
-              {t('seedPhraseIntroSidebarBulletThree')}
-            </Typography>
-          </li>
-          <li>
-            <Typography variant={TYPOGRAPHY.H4}>
-              {t('seedPhraseIntroSidebarBulletFour')}
-            </Typography>
+            </Text>
           </li>
         </ul>
       </Box>
       <RecoveryPhraseChips
-        seedPhrase={seedPhrase.split(' ')}
-        seedPhraseRevealed={seedPhraseRevealed}
+        secretRecoveryPhrase={secretRecoveryPhrase.split(' ')}
+        phraseRevealed={phraseRevealed && !hiddenPhrase}
+        hiddenPhrase={hiddenPhrase}
       />
       <div className="recovery-phrase__footer">
-        {seedPhraseRevealed ? (
-          <div className="recovery-phrase__footer--copy">
+        {phraseRevealed ? (
+          <div className="recovery-phrase__footer__copy-and-hide">
+            <div className="recovery-phrase__footer__copy-and-hide__area">
+              <Button
+                type="link"
+                icon={
+                  <i
+                    className={`far fa-eye${hiddenPhrase ? '' : '-slash'}`}
+                    color="var(--color-primary-default)"
+                  />
+                }
+                className="recovery-phrase__footer__copy-and-hide__button recovery-phrase__footer__copy-and-hide__button__hide-seed"
+                onClick={() => {
+                  setHiddenPhrase(!hiddenPhrase);
+                }}
+              >
+                {hiddenPhrase ? t('revealTheSeedPhrase') : t('hideSeedPhrase')}
+              </Button>
+              <Button
+                onClick={() => {
+                  handleCopy(secretRecoveryPhrase);
+                }}
+                icon={
+                  <Icon
+                    name={copied ? IconName.CopySuccess : IconName.Copy}
+                    color={IconColor.primaryDefault}
+                  />
+                }
+                className="recovery-phrase__footer__copy-and-hide__button recovery-phrase__footer__copy-and-hide__button__copy-to-clipboard"
+                type="link"
+              >
+                {copied ? t('copiedExclamation') : t('copyToClipboard')}
+              </Button>
+            </div>
             <Button
-              onClick={() => {
-                handleCopy(seedPhrase);
-              }}
-              icon={copied ? null : <Copy size={20} color="#3098DC" />}
-              className="recovery-phrase__footer--copy--button"
-            >
-              {copied ? t('copiedExclamation') : t('copyToClipboard')}
-            </Button>
-            <Button
-              rounded
+              data-testid="recovery-phrase-next"
               type="primary"
               className="recovery-phrase__footer--button"
               onClick={() => {
-                history.push(INITIALIZE_CONFIRM_SEED_PHRASE_ROUTE);
+                trackEvent({
+                  category: MetaMetricsEventCategory.Onboarding,
+                  event:
+                    MetaMetricsEventName.OnboardingWalletSecurityPhraseWrittenDown,
+                });
+                history.push(
+                  `${ONBOARDING_CONFIRM_SRP_ROUTE}${isFromReminderParam}`,
+                );
               }}
             >
               {t('next')}
@@ -104,11 +152,16 @@ export default function RecoveryPhrase({ seedPhrase }) {
           </div>
         ) : (
           <Button
-            rounded
+            data-testid="recovery-phrase-reveal"
             type="primary"
             className="recovery-phrase__footer--button"
             onClick={() => {
-              setSeedPhraseRevealed(true);
+              trackEvent({
+                category: MetaMetricsEventCategory.Onboarding,
+                event:
+                  MetaMetricsEventName.OnboardingWalletSecurityPhraseRevealed,
+              });
+              setPhraseRevealed(true);
             }}
           >
             {t('revealSeedWords')}
@@ -120,5 +173,5 @@ export default function RecoveryPhrase({ seedPhrase }) {
 }
 
 RecoveryPhrase.propTypes = {
-  seedPhrase: PropTypes.string,
+  secretRecoveryPhrase: PropTypes.string,
 };

@@ -2,12 +2,8 @@ import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { I18nContext } from '../../../contexts/i18n';
-import Typography from '../typography/typography';
-import {
-  COLORS,
-  FONT_WEIGHT,
-  TYPOGRAPHY,
-} from '../../../helpers/constants/design-system';
+import { Color, TextVariant } from '../../../helpers/constants/design-system';
+import { Text } from '../../component-library';
 
 function Connector({ isFirst, isLast }) {
   if (isFirst) {
@@ -47,13 +43,14 @@ export default function RadioGroup({ options, name, selectedValue, onChange }) {
           <div className="radio-group__column" key={`${name}-${option.value}`}>
             <label className="radio-group__column-inner">
               {hasRecommendation && (
-                <Typography
-                  color={COLORS.SUCCESS3}
+                <Text
+                  color={Color.successDefault}
                   className="radio-group__column-recommended"
-                  variant={TYPOGRAPHY.H7}
+                  variant={TextVariant.bodySm}
+                  as="h6"
                 >
                   {option.recommended ? t('recommendedGasLabel') : ''}
-                </Typography>
+                </Text>
               )}
               <div className="radio-group__column-radio">
                 <input
@@ -68,14 +65,14 @@ export default function RadioGroup({ options, name, selectedValue, onChange }) {
                 isFirst={index === 0}
                 isLast={index === options.length - 1}
               />
-              <Typography
-                color={checked ? COLORS.BLACK : COLORS.UI4}
-                fontWeight={FONT_WEIGHT.BOLD}
-                variant={TYPOGRAPHY.H7}
+              <Text
+                color={checked ? Color.textDefault : Color.textMuted}
+                variant={TextVariant.bodySmBold}
+                as="h6"
                 className="radio-group__column-label"
               >
                 {option.label}
-              </Typography>
+              </Text>
             </label>
           </div>
         );
@@ -85,9 +82,21 @@ export default function RadioGroup({ options, name, selectedValue, onChange }) {
 }
 
 RadioGroup.propTypes = {
+  /**
+   * Predefined options for radio group
+   */
   options: PropTypes.array,
+  /**
+   * Show selected value
+   */
   selectedValue: PropTypes.string,
+  /**
+   * Show name as label
+   */
   name: PropTypes.string,
+  /**
+   * Handler for onChange
+   */
   onChange: PropTypes.func,
 };
 

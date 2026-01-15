@@ -1,38 +1,44 @@
 import React from 'react';
 import { Provider } from 'react-redux';
-import { object, boolean, select } from '@storybook/addon-knobs';
 
 import configureStore from '../../../store/store';
 import testData from '../../../../.storybook/test-data';
+import { getInternalAccounts } from '../../../selectors';
 import ContactListTab from './contact-list-tab.component';
 
 // Using Test Data For Redux
 const store = configureStore(testData);
 
 export default {
-  title: 'ContactListTab',
-  id: __filename,
+  title: 'Pages/Settings/ContactListTab',
+
   decorators: [(story) => <Provider store={store}>{story()}</Provider>],
+  argsTypes: {
+    addressBook: { control: 'object' },
+    internalAccounts: { control: 'object' },
+    hideAddressBook: { control: 'boolean' },
+    selectedAddress: { control: 'select' },
+    history: { action: 'history' },
+  },
 };
 
-export const ContactListTabComponent = () => {
-  const { metamask } = store.getState();
-  const { addresses } = metamask;
-  const addressBook = object('Address Book', addresses);
-  const hideAddressBook = boolean('Hide Address Book', false);
-  const selectedAddress = select(
-    'Selected Address',
-    addresses.map(({ address }) => address),
-  );
+const { metamask } = store.getState();
+const { addresses } = metamask;
 
+const internalAccounts = getInternalAccounts(store.getState());
+
+export const DefaultStory = (args) => {
   return (
     <div style={{ width: 300 }}>
-      <ContactListTab
-        addressBook={addressBook}
-        history={{ push: () => undefined }}
-        hideAddressBook={hideAddressBook}
-        selectedAddress={selectedAddress}
-      />
+      <ContactListTab {...args} />
     </div>
   );
+};
+
+DefaultStory.storyName = 'Default';
+DefaultStory.args = {
+  addressBook: addresses,
+  internalAccounts,
+  hideAddressBook: false,
+  selectedAddress: addresses.map(({ address }) => address),
 };

@@ -1,10 +1,12 @@
 import React from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
-import Typography from '../typography/typography';
-import { COLORS, TYPOGRAPHY } from '../../../helpers/constants/design-system';
-
-const DECIMAL_REGEX = /\.(\d*)/u;
+import {
+  TextColor,
+  TextVariant,
+} from '../../../helpers/constants/design-system';
+import { DECIMAL_REGEX } from '../../../../shared/constants/tokens';
+import { Text } from '../../component-library';
 
 export default function NumericInput({
   detailText = '',
@@ -14,6 +16,11 @@ export default function NumericInput({
   autoFocus = false,
   allowDecimals = true,
   disabled = false,
+  dataTestId,
+  placeholder,
+  id,
+  name,
+  inputRef,
 }) {
   return (
     <div
@@ -30,28 +37,50 @@ export default function NumericInput({
         onChange={(e) => {
           const newValue = e.target.value;
           const match = DECIMAL_REGEX.exec(newValue);
-          if (match?.[1]?.length >= 15) return;
+          if (match?.[1]?.length >= 15) {
+            return;
+          }
           onChange?.(parseFloat(newValue || 0, 10));
         }}
         min="0"
         autoFocus={autoFocus}
         disabled={disabled}
+        data-testid={dataTestId}
+        placeholder={placeholder}
+        id={id}
+        name={name}
+        ref={inputRef}
       />
       {detailText && (
-        <Typography color={COLORS.UI4} variant={TYPOGRAPHY.H7} tag="span">
+        <Text
+          color={TextColor.textAlternative}
+          variant={TextVariant.bodySm}
+          as="span"
+        >
           {detailText}
-        </Typography>
+        </Text>
       )}
     </div>
   );
 }
 
 NumericInput.propTypes = {
-  value: PropTypes.oneOf([PropTypes.number, PropTypes.string]),
+  value: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   detailText: PropTypes.string,
   onChange: PropTypes.func,
   error: PropTypes.string,
   autoFocus: PropTypes.bool,
   allowDecimals: PropTypes.bool,
   disabled: PropTypes.bool,
+  dataTestId: PropTypes.string,
+  placeholder: PropTypes.string,
+  /**
+   * The name of the input
+   */
+  name: PropTypes.string,
+  /**
+   * The id of the input element. Should be used with htmlFor with a label element.
+   */
+  id: PropTypes.string,
+  inputRef: PropTypes.object,
 };

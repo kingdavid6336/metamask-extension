@@ -1,60 +1,67 @@
 /* eslint-disable react/prop-types */
-import React, { useEffect } from 'react';
-import { text } from '@storybook/addon-knobs';
-import { store, getNewState } from '../../../.storybook/preview';
-import { suggestedAssets } from '../../../.storybook/initial-states/approval-screens/add-suggested-token';
-import { updateMetamaskState } from '../../store/actions';
+import React from 'react';
+import { Provider } from 'react-redux';
+import { pendingTokenApprovals as mockPendingTokenApprovals } from '../../../.storybook/initial-states/approval-screens/add-suggested-token';
+
+import configureStore from '../../store/store';
+
+import mockState from '../../../.storybook/test-data';
+
 import ConfirmAddSuggestedToken from '.';
 
+const store = configureStore({
+  metamask: {
+    ...mockState.metamask,
+    pendingApprovals: mockPendingTokenApprovals,
+    tokens: [],
+  },
+});
+
 export default {
-  title: 'Confirmation Screens',
-  id: __filename,
+  title: 'Pages/ConfirmAddSuggestedToken',
+  decorators: [(story) => <Provider store={store}>{story()}</Provider>],
 };
 
-const PageSet = ({ children }) => {
-  const symbol = text('symbol', 'META');
-  const image = text('Icon URL', 'metamark.svg');
+export const DefaultStory = () => <ConfirmAddSuggestedToken />;
+DefaultStory.storyName = 'Default';
 
-  const state = store.getState();
-  const suggestedAssetsState = state.metamask.suggestedAssets;
+export const WithDuplicateAddress = () => <ConfirmAddSuggestedToken />;
+const WithDuplicateAddressStore = configureStore({
+  metamask: {
+    ...mockState.metamask,
+    pendingApprovals: mockPendingTokenApprovals,
 
-  useEffect(() => {
-    suggestedAssetsState[0].symbol = symbol;
-    store.dispatch(
-      updateMetamaskState(
-        getNewState(state.metamask, {
-          suggestedAssets: suggestedAssetsState,
-        }),
-      ),
-    );
-  }, [symbol, suggestedAssetsState, state.metamask]);
-  useEffect(() => {
-    suggestedAssetsState[0].image = image;
-    store.dispatch(
-      updateMetamaskState(
-        getNewState(state.metamask, {
-          suggestedAssets: suggestedAssetsState,
-        }),
-      ),
-    );
-  }, [image, suggestedAssetsState, state.metamask]);
+    tokens: [
+      {
+        ...Object.values(mockPendingTokenApprovals)[0].asset,
+      },
+    ],
+  },
+});
+WithDuplicateAddress.decorators = [
+  (story) => <Provider store={WithDuplicateAddressStore}>{story()}</Provider>,
+];
 
-  return children;
-};
+export const WithDuplicateSymbolAndDifferentAddress = () => (
+  <ConfirmAddSuggestedToken />
+);
+const WithDuplicateSymbolAndDifferentAddressStore = configureStore({
+  metamask: {
+    ...mockState.metamask,
+    pendingApprovals: mockPendingTokenApprovals,
 
-export const AddSuggestedToken = () => {
-  const state = store.getState();
-  store.dispatch(
-    updateMetamaskState(
-      getNewState(state.metamask, {
-        suggestedAssets,
-      }),
-    ),
-  );
-
-  return (
-    <PageSet>
-      <ConfirmAddSuggestedToken />
-    </PageSet>
-  );
-};
+    tokens: [
+      {
+        ...Object.values(mockPendingTokenApprovals)[0].asset,
+        address: '0xNonSuggestedAddress',
+      },
+    ],
+  },
+});
+WithDuplicateSymbolAndDifferentAddress.decorators = [
+  (story) => (
+    <Provider store={WithDuplicateSymbolAndDifferentAddressStore}>
+      {story()}
+    </Provider>
+  ),
+];

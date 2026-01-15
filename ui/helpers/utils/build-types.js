@@ -1,19 +1,42 @@
-import betaJson from '../../../app/build-types/beta/beta-mascot.json';
+///: BEGIN:ONLY_INCLUDE_IF(build-flask)
+// TODO: Remove restricted import
+// eslint-disable-next-line import/no-restricted-paths
+import flaskJson from '../../../app/build-types/flask/images/flask-mascot.json';
+///: END:ONLY_INCLUDE_IF
+///: BEGIN:ONLY_INCLUDE_IF(build-mmi)
+// TODO: Remove restricted import
+// eslint-disable-next-line import/no-restricted-paths
+import mmiJson from '../../../app/build-types/mmi/mmi-mascot.json';
+///: END:ONLY_INCLUDE_IF
 
 const assetList = {
   main: {
-    metafoxLogoHorizontalDark: '/images/logo/metamask-logo-horizontal.svg',
     // Will use default provided by the @metamask/logo library
     foxMeshJson: undefined,
   },
+  ///: BEGIN:ONLY_INCLUDE_IF(build-beta)
   beta: {
-    metafoxLogoHorizontalDark: '/images/logo/metamask-logo-horizontal-dark.svg',
-    foxMeshJson: betaJson,
+    foxMeshJson: undefined,
   },
+  ///: END:ONLY_INCLUDE_IF
+  ///: BEGIN:ONLY_INCLUDE_IF(build-flask)
+  flask: {
+    foxMeshJson: flaskJson,
+  },
+  ///: END:ONLY_INCLUDE_IF
+  ///: BEGIN:ONLY_INCLUDE_IF(build-mmi)
+  mmi: {
+    foxMeshJson: mmiJson,
+  },
+  ///: END:ONLY_INCLUDE_IF
 };
 
 export function isBeta() {
   return process.env.METAMASK_BUILD_TYPE === 'beta';
+}
+
+export function isMMI() {
+  return process.env.METAMASK_BUILD_TYPE === 'mmi';
 }
 
 // Returns a specific version of an asset based on
@@ -24,8 +47,8 @@ export function getBuildSpecificAsset(assetName) {
     !assetList[buildType] ||
     !Object.keys(assetList[buildType]).includes(assetName)
   ) {
-    console.warn(
-      `Cannot find asset for build ${buildType}: ${assetName}, returning main build asset`,
+    console.error(
+      `Cannot find asset "${assetName}" for build "${buildType}", returning main build asset.`,
     );
     return assetList.main[assetName];
   }
